@@ -33,7 +33,7 @@ async def send_to_did(message: str):
             "input": message,
             "ssml": "false"
         },
-        "driver_url": "bank://lively"
+        "driver_url": "bank://neutral"
     }
 
     async with httpx.AsyncClient() as client:
