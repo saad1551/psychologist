@@ -1,11 +1,17 @@
 import httpx
 import os
 from dotenv import load_dotenv
+from typing import List, Tuple
 
 load_dotenv()
 
-DID_API_USERNAME = os.getenv("AVATAR_API_USERNAME")  # or hardcode for now
-DID_API_PASSWORD = os.getenv("AVATAR_API_PASSWORD")  # or hardcode for now
+def get_did_api_credentials() -> List[Tuple[str, str]]:
+    """
+    Parses AVATAR_KEYS env variable into list of (username, password) tuples.
+    Format: "user1:pass1,user2:pass2"
+    """
+    raw_keys = os.getenv("AVATAR_KEYS", "")
+    return [tuple(pair.split(":")) for pair in raw_keys.split(",") if ":" in pair]
 
 async def send_to_did(message: str):
     url = "https://api.d-id.com/talks"
@@ -27,16 +33,29 @@ async def send_to_did(message: str):
             "input": message,
             "ssml": "false"
         },
-        "driver_url": "bank://lively"  # or use your preferred driver
+        "driver_url": "bank://lively"
     }
 
     async with httpx.AsyncClient() as client:
-        response = await client.post(url, json=payload, headers=headers, auth=(DID_API_USERNAME, DID_API_PASSWORD))
+        api_credentials = get_did_api_credentials()
+        for username, password in api_credentials:
+            try:
+                response = await client.post(
+                    url,
+                    json=payload,
+                    headers=headers,
+                    auth=(username, password)
+                )
 
-    if response.status_code == 200 or response.status_code == 201:
-        result = response.json()
-        return result["id"]  # You’ll use this ID for polling GET from frontend
-    else:
-        print(f"Error: {response.status_code}, {response.text}")
-        return None
+                if response.status_code in [200, 201]:
+                    result = response.json()
+                    return result["id"]
+
+                print(f"Failed with {username}: {response.status_code} - {response.text}")
+
+            except Exception as e:
+                print(f"Exception with {username}: {e}")
+
+    print("All credentials failed.")
+    return None
 
