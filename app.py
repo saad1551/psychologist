@@ -32,7 +32,7 @@ async def chat_with_avatar(data: UserInput):
 
     talk_id = None
     # Send to D-ID
-    # talk_id = await send_to_did(response_text)
+    talk_id = await send_to_did(response_text)
 
     # Always return response_text, add talk_id if successful
     if talk_id:
