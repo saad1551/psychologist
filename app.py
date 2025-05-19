@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 import asyncio
 from did import send_to_did 
+from llm import send_message
 
 app = FastAPI()
 
@@ -27,8 +28,9 @@ def stub_response_text():
 async def chat_with_avatar(data: UserInput):
     message = data.text
     # Call local LLM here and get response_text (mocked for now)
-    response_text = stub_response_text()
+    response_text = send_message(message)
 
+    talk_id = None
     # Send to D-ID
     talk_id = await send_to_did(response_text)
 
