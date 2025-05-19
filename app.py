@@ -36,8 +36,16 @@ async def chat_with_avatar(data: UserInput):
     # Send to D-ID
     talk_id = await send_to_did(response_text)
 
+    # Always return response_text, add talk_id if successful
     if talk_id:
-        return {"talk_id": talk_id}
+        return {
+            "talk_id": talk_id,
+            "response_text": response_text
+        }
     else:
-        return {"error": "Failed to initiate avatar video."}
+        return {
+            "error": "Failed to initiate avatar video.",
+            "response_text": response_text
+        }
+
 
